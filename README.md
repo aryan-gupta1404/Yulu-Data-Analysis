@@ -1,93 +1,137 @@
-# Yulu Bike Sharing Demand Analysis
-
-## Project Overview
-
-Yulu is one of India’s leading micro-mobility service providers offering shared electric cycles for daily commuting. The company experienced a decline in revenue and wanted to identify the factors affecting the demand for shared electric cycles in the Indian market.
-
-This project performs Exploratory Data Analysis (EDA) and Hypothesis Testing to understand the variables impacting bike rental demand.
-
----
+# 🚲 Yulu Bike Sharing Demand Analysis
 
 ## Business Problem
 
-The objective of this analysis is to answer the following questions:
+Yulu — India's leading micro-mobility provider — experienced a significant decline in revenues and needed to understand what drives demand for their shared electric cycles. This project identifies the key factors affecting bike rental demand using Exploratory Data Analysis and Statistical Hypothesis Testing.
 
-1- Which variables significantly affect the demand for shared electric cycles?
-2- How well do these variables explain bike rental demand?
-
----
-
-## Dataset Information
-
-### Features
-
-1- `datetime` : Date and time
-2- `season` : Season category
-3- `holiday` : Whether the day is a holiday
-4- `workingday` : Whether the day is a working day
-5- `weather` : Weather conditions
-6- `temp` : Temperature in Celsius
-7- `atemp` : Feels-like temperature
-8- `humidity` : Humidity level
-9- `windspeed` : Wind speed
-10- `casual` : Count of casual users
-11- `registered` : Count of registered users
-12- `count` : Total bike rentals
+**Two core business questions answered:**
+1. Which variables significantly affect the demand for shared electric cycles?
+2. How well do these variables explain rental demand patterns?
 
 ---
 
-## Concepts Used
+## Dataset Overview
 
-1- Exploratory Data Analysis (EDA)
-2- Data Cleaning
-3- Bi-Variate Analysis
-4- Hypothesis Testing
-5- 2-Sample T-Test
-6- ANOVA
-7- Chi-Square Test
-8- Data Visualization
+| Feature | Description |
+|---|---|
+| datetime | Hourly timestamp of rental |
+| season | 1: Spring, 2: Summer, 3: Fall, 4: Winter |
+| holiday | Whether the day is a public holiday |
+| workingday | Whether the day is a working day |
+| weather | 1: Clear → 4: Heavy Rain/Snow |
+| temp | Temperature in Celsius |
+| humidity | Humidity level |
+| windspeed | Wind speed |
+| count | Total bike rentals (target variable) |
 
----
-
-## Objectives Performed
-
-1- Analyzed the relationship between bike demand and different factors
-2- Studied the impact of:
-
-  a- Working Day
-  b- Weather
-  c- Season
-  d- Performed statistical tests to validate assumptions and business insights
+**Dataset size:** 10,886 records, 12 columns. No null values or duplicates found.
 
 ---
 
 ## Tools & Libraries
 
-1- Python
-2- Pandas
-3- NumPy
-4-Matplotlib
-5- Seaborn
-6- SciPy
+- **Python** — Pandas, NumPy
+- **Visualisation** — Matplotlib, Seaborn
+- **Statistics** — SciPy (T-Test, ANOVA, Kruskal-Wallis, Chi-Square, Shapiro-Wilk, Levene)
 
 ---
 
-## Key Insights
+## Key EDA Findings
 
-1- Weather conditions significantly affect bike demand
-2- Seasonal variations influence rental patterns
-3- Working days and holidays impact user behavior
-4- Registered users contribute more consistently to rentals
+- **Clear weather dominates rentals** — the vast majority of rides occur in weather category 1 (clear/partly cloudy)
+- **Winter is the most popular season** for Yulu rentals, followed by Fall, Summer, and Spring
+- **Strong multicollinearity detected** — `atemp` and `temp` had near-perfect correlation (removed `atemp`); `registered` and `casual` were subcomponents of `count` (removed to avoid data leakage)
+- **Windspeed outliers** treated using IQR method; `count` outliers retained as they represent genuine demand spikes
 
 ---
 
-## Conclusion
+## Hypothesis Testing — Results Summary
 
-The analysis helped identify the major factors affecting electric cycle demand. These insights can help Yulu optimize operations, improve customer experience, and make data-driven business decisions.
+### Test 1: Weekday vs Weekend Demand
+**Method:** 2-Sample T-Test (after Shapiro-Wilk normality check + QQ plot)
+
+| | Result |
+|---|---|
+| H₀ | Weekday demand ≥ Weekend demand |
+| Hₐ | Weekday demand < Weekend demand |
+| P-Value | > 0.05 |
+| **Decision** | **Fail to Reject H₀** |
+
+**Finding:** No statistically significant difference in demand between weekdays and weekends. Yulu bikes are used consistently throughout the week.
+
+---
+
+### Test 2: Demand Across Weather Conditions
+**Method:** Kruskal-Wallis Test (used because Shapiro-Wilk and Levene tests failed — data not normally distributed and variances not equal)
+
+| | Result |
+|---|---|
+| H₀ | Average demand is equal across all weather conditions |
+| Hₐ | Average demand differs across weather conditions |
+| P-Value | < 0.05 |
+| **Decision** | **Reject H₀** |
+
+**Finding:** Weather significantly impacts bike rental demand. Clear weather drives meaningfully higher demand than misty or rainy conditions.
+
+---
+
+### Test 3: Demand Across Seasons
+**Method:** Kruskal-Wallis Test
+
+| | Result |
+|---|---|
+| H₀ | Demand is equal across all seasons |
+| Hₐ | Demand differs across seasons |
+| P-Value | < 0.05 |
+| **Decision** | **Reject H₀** |
+
+**Finding:** Season significantly affects rental demand. Winter and Fall show higher demand patterns than Spring.
+
+---
+
+### Test 4: Weather Dependency on Season
+**Method:** Chi-Square Test of Independence
+
+| | Result |
+|---|---|
+| H₀ | Weather conditions are independent of season |
+| Hₐ | Weather conditions depend on season |
+| P-Value | < 0.05 |
+| **Decision** | **Reject H₀** |
+
+**Finding:** Weather and season are not independent — weather patterns vary significantly across seasons, confirming both variables carry overlapping demand signals.
+
+---
+
+## Business Recommendations
+
+1. **Seasonal pricing strategy** — Increase fleet availability and reduce per-ride pricing in Winter and Fall to capitalise on peak demand periods. Consider premium pricing in Spring when demand is lowest.
+
+2. **Weather-based dynamic pricing** — Implement real-time pricing adjustments tied to weather forecasts. Offer discounted rides 24 hours before predicted clear weather windows to drive pre-booking behaviour.
+
+3. **Weekday activation campaigns** — Since weekday and weekend demand are statistically similar, Yulu should not over-invest in weekend-only promotions. Focus instead on consistent daily engagement — loyalty rewards, commuter subscriptions, and corporate tie-ups.
+
+4. **Station placement optimisation** — Given that weather and season jointly influence demand, Yulu should prioritise covered station infrastructure in high-demand zones to reduce weather sensitivity and extend the riding season.
+
+5. **Predictive demand model** — The significant relationships found between weather, season, and demand provide a strong foundation for a machine learning demand forecasting model. Implementing this would allow Yulu to optimise fleet distribution before demand spikes rather than reacting to them.
+
+---
+
+## Project Structure
+
+```
+Yulu-Data-Analysis/
+│
+├── data/
+│   └── bike_sharing.csv
+├── Yulu_case_study.ipynb
+└── README.md
+```
 
 ---
 
 ## Author
 
-Aryan Gupta
-
+**Aryan Gupta**  
+Data Analytics | Python | Statistics | Hypothesis Testing  
+[GitHub](https://github.com/aryan-gupta1404) | [LinkedIn](https://www.linkedin.com/in/aryan-gupta1404)
